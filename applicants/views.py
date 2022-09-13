@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from rest_framework.views import APIView
-from .models import User, Learner
+from .models import User
 from django.contrib.auth import login, logout
 
 

@@ -8,7 +8,11 @@ from django.contrib.auth import login, logout
 
 from rest_framework import generics, mixins, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from . serializers import CreateUserSerializer, AuthCustomTokenSerializer
+from . serializers import (
+    CreateUserSerializer,
+    AuthCustomTokenSerializer,
+    ChangePasswordSerializer
+)
 
 
 from rest_framework.response import Response
@@ -30,7 +34,7 @@ class CreateUserView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response({
-        "user": UserSerializer(user, context=self.get_serializer_context()).data,
+        "user": CreateUserSerializer(user, context=self.get_serializer_context()).data,
         "token": AuthToken.objects.create(user)[1]
         })
 
@@ -43,3 +47,9 @@ class LoginView(KnoxLoginView):
         user = serializer.validated_data['user']
         login(request, user)
         return super(LoginView, self).post(request, format=None)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangePasswordSerializer

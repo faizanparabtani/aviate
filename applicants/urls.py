@@ -6,9 +6,14 @@ from knox import views as knox_views
 from .views import *
 
 urlpatterns = [
+    # Login Register
     path('register/', CreateUserView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', knox_views.LogoutView.as_view(), name='logout'),
     path('logoutall/', knox_views.LogoutAllView.as_view(), name='logoutall'),
+
+    # Update Profile, Password
+    path('profile/change_password/<int:pk>', ChangePasswordView.as_view(), name='change_password'),
+
 
 ]

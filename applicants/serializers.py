@@ -33,6 +33,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
     Email
     password - First password entry
     password2 - Confirmation of entered password
+    Resume This field is optional
 
     """
     email = serializers.EmailField(
@@ -45,7 +46,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'first_name', 'last_name', 'password', 'password2')
+        fields = ('email', 'first_name', 'last_name', 'password', 'password2', 'resume')
 
 
     # Method to validate if both passwords entered match
@@ -103,6 +104,39 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
 
         instance.set_password(validated_data['password'])
+        instance.save()
+
+        return instance
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'resume')
+
+
+    def validate_email(self, value):
+        user = self.context['request'].user
+        if User.objects.exclude(pk=user.pk).filter(email=value).exists():
+            raise serializers.ValidationError({"email": "This email is already in use."})
+        return value
+
+
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        print(user)
+        if user.pk != instance.pk:
+            raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
+
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.resume = validated_data.get('resume', instance.resume)
+
         instance.save()
 
         return instance

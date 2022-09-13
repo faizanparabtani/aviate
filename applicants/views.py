@@ -5,19 +5,19 @@ from rest_framework.views import APIView
 from .models import User
 from django.contrib.auth import login, logout
 
-
 from rest_framework import generics, mixins, status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from . serializers import (
     CreateUserSerializer,
     AuthCustomTokenSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    UpdateProfileSerializer
 )
-
 
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
 from knox.auth import TokenAuthentication
@@ -28,6 +28,7 @@ class CreateUserView(generics.GenericAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = CreateUserSerializer
+    parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -53,3 +54,17 @@ class ChangePasswordView(generics.UpdateAPIView):
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
+
+
+class UpdateProfileView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UpdateProfileSerializer
+
+    def post(self, request, *args, **kwargs):
+        profile = UpdateProfileSerializer(data=request.data)
+        if profile.is_valid():
+            profile.save()
+            return Response(profile.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(profile.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'applications',
     'applicants',
 
+    # Fields
+    'phonenumber_field',
     # Rest Framework
     'rest_framework',
     # Knox for Authentication

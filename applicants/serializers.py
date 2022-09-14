@@ -128,7 +128,6 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
-        print(user)
         if user.pk != instance.pk:
             raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
 
@@ -148,8 +147,8 @@ class AuthCustomTokenSerializer(serializers.Serializer):
     Custom Serializer to Authenticate a User
 
     """
-    email = serializers.EmailField()
-    password = serializers.CharField()
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
 
     def validate(self, attrs):
         email = attrs.get('email')

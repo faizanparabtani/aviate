@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from phonenumber_field.modelfields import PhoneNumberField
+from .validators import validate_file_extension, validate_file_size
 
 
 class UserManager(BaseUserManager):
@@ -53,11 +54,11 @@ class User(AbstractUser):
     Mobile Number
     """
     username = None
-    email = models.EmailField(_('email_address'), unique=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    mobile_no = PhoneNumberField('mobile_no', null = True, blank = True)
-    resume = models.FileField(blank=True, null=True)
+    email = models.EmailField(_("Email Address"), unique=True)
+    first_name = models.CharField(_("First Name"), max_length=100)
+    last_name = models.CharField(_("Last Name"), max_length=100)
+    mobile_no = PhoneNumberField(_("Mobile Number"), null = True, blank = True)
+    resume = models.FileField(_("Resume"), upload_to='resume', blank=True, null=True, validators=[validate_file_extension, validate_file_size])
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

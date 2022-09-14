@@ -9,13 +9,15 @@ from django.http import Http404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import generics, mixins, status
-from rest_framework import permissions
+from rest_framework import generics, mixins, status, permissions, filters
+from rest_framework.pagination import PageNumberPagination
 import json
 from django.http import HttpResponse
 
 from . models import *
 from applicants.models import User
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 class ApplicationCreateView(generics.CreateAPIView):
     queryset = Application.objects.all()
@@ -32,9 +34,16 @@ class ApplicationCreateView(generics.CreateAPIView):
         return Response(application, status=status.HTTP_200_OK)
 
 
-class ApplicationView(APIView):
+class ApplicationFetchView(APIView):
+    queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAdminUser]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    pagination_class = PageNumberPagination
+
+    filterset_fields = ['id', 'applicant', 'job', 'selected']
+    search_fields = ['id', 'applicant', 'job', 'selected']
+    ordering_fields = ['id', 'applicant', 'job', 'selected']
 
     def get(self, request, format=None):
         request_body = dict(request.data)
@@ -47,7 +56,7 @@ class ApplicationView(APIView):
             job = request_body['job'][0]
         except:
             job = None
-            
+        
         if applicant != None and job != None:
             try:
                 applications = Application.objects.get(job=job, applicant=applicant)
@@ -59,6 +68,7 @@ class ApplicationView(APIView):
         elif applicant == None and job:
             try:
                 applications = Application.objects.filter(job=job)
+
                 data = ApplicationSerializer(applications, many=True).data
                 return Response(data, status=status.HTTP_200_OK)
             except Application.DoesNotExist:
@@ -67,8 +77,10 @@ class ApplicationView(APIView):
         elif applicant and job == None:
             try:
                 applications = Application.objects.filter(applicant=applicant)
+                # print('applications: ', applications)
                 data = ApplicationSerializer(applications, many=True).data
-                return Response(data, status=status.HTTP_200_OK)
+                # print('Data: ', data)
+                return Response(applications, status=status.HTTP_200_OK)
             except Application.DoesNotExist:
                 raise Response({'Bad Request':'Bad Request'}, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -85,6 +97,7 @@ class ApplicationUpdateView(generics.UpdateAPIView,
     
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAdminUser]
+    queryset = Application.objects.all()
 
     def get_object(self):
         id = self.kwargs["pk"]

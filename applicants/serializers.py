@@ -1,5 +1,3 @@
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from .models import User
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
@@ -7,6 +5,10 @@ from django.core import exceptions
 from django.contrib.auth import authenticate
 from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
+
+# DRF Imports
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -33,7 +35,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
     Email
     password - First password entry
     password2 - Confirmation of entered password
-    Resume This field is optional
+    Resume - This field is optional
 
     """
     email = serializers.EmailField(
@@ -144,7 +146,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
 class AuthCustomTokenSerializer(serializers.Serializer):
     """
 
-    Custom Serializer to Authenticate a User
+    Custom TokenAuth Serializer to Authenticate a User
 
     """
     email = serializers.EmailField(required=True)

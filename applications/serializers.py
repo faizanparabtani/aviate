@@ -1,20 +1,25 @@
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from django.db import transaction
 from django.core import exceptions
 from django.contrib.auth import authenticate
 from django.core.validators import validate_email
 from django.utils.translation import gettext_lazy as _
 
+# Model Imports
 from .models import *
 from applicants.models import User
 from jobs.models import Job
+
+# DRF imports
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
 
 class ApplicationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = '__all__'
 
+    # Atomic transaction to ensure database consistency
     @transaction.atomic
     def create(self, validated_data):
         # Application Object creation

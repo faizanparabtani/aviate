@@ -22,9 +22,6 @@ from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
 from knox.auth import TokenAuthentication
 
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-
 
 class CreateUserView(generics.GenericAPIView):
     queryset = User.objects.all()

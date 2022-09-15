@@ -10,6 +10,7 @@ class Application(models.Model):
     selected = models.BooleanField(_("Application Status"))
 
     class Meta:
+        # 1 Applicant per job application
         unique_together = ('applicant', 'job')
 
     def __str__(self):

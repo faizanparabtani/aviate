@@ -1,25 +1,35 @@
 from django.db.models import Count
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from . models import *
+from applicants.models import User
+import json
 from . serializers import (
     ApplicationCreateSerializer,
     ApplicationSerializer,
     ApplicationUpdateSerializer,
 )
-from django.http import Http404
 
+# DRF Imports
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics, mixins, status, permissions, filters
 from rest_framework.pagination import PageNumberPagination
-import json
-from django.http import HttpResponse
-
-from . models import *
-from applicants.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 
 
 class ApplicationCreateView(generics.CreateAPIView):
+    """
+    View that facilitates creation of an application
+    Note: 1 Applicant can apply to a Job Role only 1 time
+    Fields:
+
+    Applicant
+    Job
+    Cover Letter
+    Selected
+
+    """
     queryset = Application.objects.all()
     permission_classes = [permissions.IsAdminUser]
     serializer_class = ApplicationCreateSerializer
@@ -34,59 +44,28 @@ class ApplicationCreateView(generics.CreateAPIView):
         return Response(application, status=status.HTTP_200_OK)
 
 
-class ApplicationFetchView(APIView):
+class ApplicationFetchView(generics.ListAPIView, PageNumberPagination):
+    """
+    View that facilitates retrieval of an application
+    Pagniation and Filtering are Enabled
+
+    """
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAdminUser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     pagination_class = PageNumberPagination
 
-    filterset_fields = ['id', 'applicant', 'job', 'selected']
-    search_fields = ['id', 'applicant', 'job', 'selected']
-    ordering_fields = ['id', 'applicant', 'job', 'selected']
+    filterset_fields = ['id', 'applicant', 'job', 'selected', 'cover_letter']
+    search_fields = ['id', 'applicant__email', 'job__role', 'selected', 'cover_letter']
+    ordering_fields = ['id', 'applicant', 'job', 'selected', 'cover_letter']
 
     def get(self, request, format=None):
-        request_body = dict(request.data)
-        try:
-            applicant = request_body['applicant'][0]
-        except:
-            applicant = None
-
-        try:
-            job = request_body['job'][0]
-        except:
-            job = None
-        
-        if applicant != None and job != None:
-            try:
-                applications = Application.objects.get(job=job, applicant=applicant)
-                data = ApplicationSerializer(applications).data
-                return Response(data, status=status.HTTP_200_OK)
-            except Application.DoesNotExist:
-                raise Response({'Bad Request':'Bad Request'}, status=status.HTTP_400_BAD_REQUEST)
-
-        elif applicant == None and job:
-            try:
-                applications = Application.objects.filter(job=job)
-
-                data = ApplicationSerializer(applications, many=True).data
-                return Response(data, status=status.HTTP_200_OK)
-            except Application.DoesNotExist:
-                raise Response({'Bad Request':'Bad Request'}, status=status.HTTP_400_BAD_REQUEST)
-
-        elif applicant and job == None:
-            try:
-                applications = Application.objects.filter(applicant=applicant)
-                # print('applications: ', applications)
-                data = ApplicationSerializer(applications, many=True).data
-                # print('Data: ', data)
-                return Response(applications, status=status.HTTP_200_OK)
-            except Application.DoesNotExist:
-                raise Response({'Bad Request':'Bad Request'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            applications = Application.objects.all()
-            serializer = ApplicationSerializer(applications, many=True)
-            return Response(serializer.data)
+        applications = self.get_queryset()
+        filtered_data = self.filter_queryset(applications)
+        paginated_data = self.paginate_queryset(filtered_data)
+        data = ApplicationSerializer(paginated_data, many=True).data
+        return self.get_paginated_response(data)
             
     
 
@@ -94,7 +73,9 @@ class ApplicationUpdateView(generics.UpdateAPIView,
                         generics.RetrieveAPIView,
                         mixins.DestroyModelMixin,
                         mixins.UpdateModelMixin):
-    
+    """
+    View that facilitates updation of an application
+    """
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAdminUser]
     queryset = Application.objects.all()

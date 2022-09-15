@@ -4,7 +4,10 @@
 API endpoints are created keeping in mind the actions are being performed by Admin user.
 The same functionality can be made available for Applicants with a couple of permission changes and user validation.
 
-Swagger API docs are partially implemented and are available at endpoint '/swagger/' hence they are not fully functional
+Swagger API docs are partially implemented and are available at endpoint '/swagger/' hence they are not fully functional hence I have attached postman collection links below
+
+[Postman]
+
 
 ## Features
 
@@ -57,4 +60,4 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-
+[Postman]:<https://www.postman.com/bold-meadow-551559/workspace/ddd96496-aa43-40d3-afea-655d9a558e95/collection/17379581-a217fa14-df50-4e74-ab36-75378e1baaf5?action=share&creator=17379581>

@@ -41,6 +41,7 @@ class ApplicationCreateView(generics.CreateAPIView):
             return Response({'Bad Request':'You can only submit 1 application per Job Role'},
             status=status.HTTP_400_BAD_REQUEST)
         application = serializer.save()
+        application = ApplicationCreateSerializer(application).data
         return Response(application, status=status.HTTP_200_OK)
 
 
